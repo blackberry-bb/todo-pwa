@@ -1,13 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="80" fill="#3b82f6"/>
-  <rect x="120" y="140" width="272" height="36" rx="8" fill="white" opacity="0.3"/>
-  <rect x="120" y="238" width="272" height="36" rx="8" fill="white" opacity="0.3"/>
-  <rect x="120" y="336" width="272" height="36" rx="8" fill="white" opacity="0.3"/>
-  <circle cx="160" cy="158" r="16" fill="white"/>
-  <polyline points="152,158 159,165 170,150" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <circle cx="160" cy="256" r="16" fill="white" opacity="0.5"/>
-  <circle cx="160" cy="354" r="16" fill="white" opacity="0.5"/>
-  <rect x="188" y="148" width="180" height="18" rx="4" fill="white"/>
-  <rect x="188" y="246" width="140" height="18" rx="4" fill="white" opacity="0.7"/>
-  <rect x="188" y="344" width="160" height="18" rx="4" fill="white" opacity="0.7"/>
+  <!-- 배경 -->
+  <rect width="512" height="512" rx="112" fill="#F4F1EC"/>
+
+  <!-- Row 1: 완료된 항목 (주황/갈색 체크) -->
+  <circle cx="152" cy="196" r="34" fill="#C28E6D"/>
+  <polyline points="137,196 149,209 170,183" stroke="white" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <rect x="208" y="180" width="156" height="30" rx="15" fill="#1A1A18"/>
+
+  <!-- Row 2: 미완료 항목 -->
+  <circle cx="152" cy="284" r="34" fill="none" stroke="#1A1A18" stroke-width="10"/>
+  <rect x="208" y="268" width="128" height="30" rx="15" fill="#1A1A18"/>
+
+  <!-- Row 3: 미완료 항목 -->
+  <circle cx="152" cy="372" r="34" fill="none" stroke="#1A1A18" stroke-width="10"/>
+  <rect x="208" y="356" width="142" height="30" rx="15" fill="#1A1A18"/>
 </svg>
