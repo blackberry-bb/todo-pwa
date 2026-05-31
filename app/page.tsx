@@ -260,13 +260,94 @@ function CatPanel({
   );
 }
 
+// ─── 드럼롤 휠 피커 ──────────────────────────────────────────
+const ITEM_H = 44;
+
+function WheelPicker({ items, value, onChange }: {
+  items: string[]; value: string; onChange: (v: string) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const progRef = useRef(false);
+
+  // 마운트 시 선택된 항목으로 스크롤
+  useEffect(() => {
+    const idx = items.indexOf(value);
+    if (ref.current && idx >= 0) {
+      progRef.current = true;
+      ref.current.scrollTop = idx * ITEM_H;
+      setTimeout(() => { progRef.current = false; }, 50);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleScroll = () => {
+    if (progRef.current || !ref.current) return;
+    const idx = Math.round(ref.current.scrollTop / ITEM_H);
+    const clamped = Math.max(0, Math.min(idx, items.length - 1));
+    if (items[clamped] !== value) onChange(items[clamped]);
+  };
+
+  return (
+    <div style={{ position: 'relative', height: ITEM_H * 3, overflow: 'hidden', userSelect: 'none' }}>
+      {/* 상단 페이드 */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: ITEM_H, background: 'linear-gradient(to bottom, rgba(255,255,255,1) 30%, rgba(255,255,255,0))', zIndex: 2, pointerEvents: 'none' }} />
+      {/* 선택 표시선 */}
+      <div style={{ position: 'absolute', top: ITEM_H, left: 0, right: 0, height: ITEM_H, borderTop: '0.5px solid rgba(0,0,0,0.1)', borderBottom: '0.5px solid rgba(0,0,0,0.1)', zIndex: 1, pointerEvents: 'none' }} />
+      {/* 하단 페이드 */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: ITEM_H, background: 'linear-gradient(to top, rgba(255,255,255,1) 30%, rgba(255,255,255,0))', zIndex: 2, pointerEvents: 'none' }} />
+
+      <div
+        ref={ref}
+        onScroll={handleScroll}
+        style={{ height: '100%', overflowY: 'scroll', scrollSnapType: 'y mandatory', scrollbarWidth: 'none' }}
+      >
+        <div style={{ height: ITEM_H }} />
+        {items.map(item => (
+          <div key={item} style={{
+            height: ITEM_H, scrollSnapAlign: 'center',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 20, fontWeight: value === item ? 600 : 400,
+            color: value === item ? '#1A1A18' : '#C0BAB2',
+            letterSpacing: -0.3,
+          }}>
+            {item}
+          </div>
+        ))}
+        <div style={{ height: ITEM_H }} />
+      </div>
+    </div>
+  );
+}
+
 // ─── 알림 설정 패널 ───────────────────────────────────────────
+const HOURS_12 = Array.from({ length: 12 }, (_, i) => String(i + 1));
+const MINUTES  = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(m => pad(m));
+const AMPM     = ['오전', '오후'];
+
 function NotifPanel({ settings, onChange, onClose }: {
   settings: NotifSettings; onChange: (s: NotifSettings) => void; onClose: () => void;
 }) {
   const [permission, setPermission] = useState<NotificationPermission>(
     typeof Notification !== 'undefined' ? Notification.permission : 'default'
   );
+
+  const isPM       = settings.hour >= 12;
+  const displayH   = settings.hour % 12 || 12;
+
+  function setAmpm(v: string) {
+    const pm = v === '오후';
+    const newH = pm ? (displayH % 12) + 12 : displayH % 12;
+    onChange({ ...settings, hour: newH });
+  }
+  function setHour(v: string) {
+    const h = Number(v);
+    const newH = isPM ? (h % 12) + 12 : h % 12;
+    onChange({ ...settings, hour: newH });
+  }
+  function setMinute(v: string) {
+    onChange({ ...settings, minute: Number(v) });
+  }
+
   async function handleToggle() {
     if (!settings.enabled) {
       if (permission !== 'granted') {
@@ -288,6 +369,7 @@ function NotifPanel({ settings, onChange, onClose }: {
       icon: '/icons/icon.svg', tag: 'todo-reminder',
     });
   }
+
   return (
     <div style={{ margin: '0 20px 16px', background: '#fff', borderRadius: 18, padding: '16px 18px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', border: '0.5px solid rgba(0,0,0,0.07)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -299,7 +381,8 @@ function NotifPanel({ settings, onChange, onClose }: {
           알림 권한이 차단됐습니다. 브라우저 설정에서 허용해주세요.
         </div>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+      {/* 알림 켜기 토글 */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <span style={{ fontSize: 14, color: '#5A564E' }}>알림 켜기</span>
         <button onClick={handleToggle} disabled={permission === 'denied'} style={{
           width: 48, height: 28, borderRadius: 999, border: 'none',
@@ -310,33 +393,20 @@ function NotifPanel({ settings, onChange, onClose }: {
           <span style={{ position: 'absolute', top: 3, left: settings.enabled ? 23 : 3, width: 22, height: 22, borderRadius: '50%', background: '#fff', transition: 'left .2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)', display: 'block' }} />
         </button>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: settings.enabled && permission === 'granted' ? 14 : 0 }}>
-        <span style={{ fontSize: 14, color: settings.enabled ? '#5A564E' : '#C0BAB2' }}>알림 시간</span>
-        {/* 커스텀 타임피커 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, opacity: settings.enabled ? 1 : 0.4, pointerEvents: settings.enabled ? 'auto' : 'none' }}>
-          <select
-            value={settings.hour}
-            onChange={e => onChange({ ...settings, hour: Number(e.target.value) })}
-            style={{ appearance: 'none', WebkitAppearance: 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 10, padding: '7px 10px', fontSize: 15, fontFamily: 'inherit', fontWeight: 600, color: '#1A1A18', background: '#F9F8F6', outline: 'none', cursor: 'pointer', textAlign: 'center', width: 56 }}
-          >
-            {Array.from({ length: 24 }, (_, i) => (
-              <option key={i} value={i}>{pad(i)}</option>
-            ))}
-          </select>
-          <span style={{ fontSize: 16, fontWeight: 700, color: '#1A1A18' }}>:</span>
-          <select
-            value={settings.minute}
-            onChange={e => onChange({ ...settings, minute: Number(e.target.value) })}
-            style={{ appearance: 'none', WebkitAppearance: 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 10, padding: '7px 10px', fontSize: 15, fontFamily: 'inherit', fontWeight: 600, color: '#1A1A18', background: '#F9F8F6', outline: 'none', cursor: 'pointer', textAlign: 'center', width: 56 }}
-          >
-            {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(m => (
-              <option key={m} value={m}>{pad(m)}</option>
-            ))}
-          </select>
+
+      {/* 드럼롤 타임피커 */}
+      <div style={{ opacity: settings.enabled ? 1 : 0.35, pointerEvents: settings.enabled ? 'auto' : 'none', transition: 'opacity .2s' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+          <WheelPicker items={AMPM}     value={isPM ? '오후' : '오전'} onChange={setAmpm} />
+          <WheelPicker items={HOURS_12} value={String(displayH)}        onChange={setHour} />
+          <div style={{ fontSize: 22, fontWeight: 700, color: '#1A1A18', paddingBottom: 2, width: 16, textAlign: 'center' }}>:</div>
+          <WheelPicker items={MINUTES}  value={pad(settings.minute)}    onChange={setMinute} />
         </div>
       </div>
+
+      {/* 테스트 버튼 */}
       {settings.enabled && permission === 'granted' && (
-        <button onClick={sendTest} style={{ width: '100%', padding: '10px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.1)', background: 'transparent', fontFamily: 'inherit', fontSize: 13, color: '#5A564E', cursor: 'pointer' }}>
+        <button onClick={sendTest} style={{ width: '100%', marginTop: 14, padding: '10px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.1)', background: 'transparent', fontFamily: 'inherit', fontSize: 13, color: '#5A564E', cursor: 'pointer' }}>
           테스트 알림 보내기
         </button>
       )}
