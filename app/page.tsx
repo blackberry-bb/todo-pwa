@@ -279,10 +279,6 @@ function NotifPanel({ settings, onChange, onClose }: {
       onChange({ ...settings, enabled: false });
     }
   }
-  function handleTime(e: React.ChangeEvent<HTMLInputElement>) {
-    const [h, m] = e.target.value.split(':').map(Number);
-    if (!isNaN(h) && !isNaN(m)) onChange({ ...settings, hour: h, minute: m });
-  }
   function sendTest() {
     if (permission !== 'granted') return;
     const todos: Todo[] = JSON.parse(localStorage.getItem(TODOS_KEY) || '[]');
@@ -316,8 +312,28 @@ function NotifPanel({ settings, onChange, onClose }: {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: settings.enabled && permission === 'granted' ? 14 : 0 }}>
         <span style={{ fontSize: 14, color: settings.enabled ? '#5A564E' : '#C0BAB2' }}>알림 시간</span>
-        <input type="time" value={`${pad(settings.hour)}:${pad(settings.minute)}`} onChange={handleTime} disabled={!settings.enabled}
-          style={{ border: '1px solid rgba(0,0,0,0.1)', borderRadius: 10, padding: '6px 10px', fontSize: 14, fontFamily: 'inherit', color: settings.enabled ? '#1A1A18' : '#C0BAB2', background: settings.enabled ? '#F9F8F6' : '#F4F1EC', outline: 'none', cursor: settings.enabled ? 'pointer' : 'default' }} />
+        {/* 커스텀 타임피커 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, opacity: settings.enabled ? 1 : 0.4, pointerEvents: settings.enabled ? 'auto' : 'none' }}>
+          <select
+            value={settings.hour}
+            onChange={e => onChange({ ...settings, hour: Number(e.target.value) })}
+            style={{ appearance: 'none', WebkitAppearance: 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 10, padding: '7px 10px', fontSize: 15, fontFamily: 'inherit', fontWeight: 600, color: '#1A1A18', background: '#F9F8F6', outline: 'none', cursor: 'pointer', textAlign: 'center', width: 56 }}
+          >
+            {Array.from({ length: 24 }, (_, i) => (
+              <option key={i} value={i}>{pad(i)}</option>
+            ))}
+          </select>
+          <span style={{ fontSize: 16, fontWeight: 700, color: '#1A1A18' }}>:</span>
+          <select
+            value={settings.minute}
+            onChange={e => onChange({ ...settings, minute: Number(e.target.value) })}
+            style={{ appearance: 'none', WebkitAppearance: 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 10, padding: '7px 10px', fontSize: 15, fontFamily: 'inherit', fontWeight: 600, color: '#1A1A18', background: '#F9F8F6', outline: 'none', cursor: 'pointer', textAlign: 'center', width: 56 }}
+          >
+            {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(m => (
+              <option key={m} value={m}>{pad(m)}</option>
+            ))}
+          </select>
+        </div>
       </div>
       {settings.enabled && permission === 'granted' && (
         <button onClick={sendTest} style={{ width: '100%', padding: '10px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.1)', background: 'transparent', fontFamily: 'inherit', fontSize: 13, color: '#5A564E', cursor: 'pointer' }}>
