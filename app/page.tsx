@@ -1,101 +1,207 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+
+interface Todo {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: number;
+}
+
+type Filter = 'all' | 'active' | 'completed';
+
+function generateId() {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [input, setInput] = useState('');
+  const [filter, setFilter] = useState<Filter>('all');
+  const [mounted, setMounted] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  useEffect(() => {
+    const saved = localStorage.getItem('todos');
+    if (saved) {
+      try {
+        setTodos(JSON.parse(saved));
+      } catch {
+        setTodos([]);
+      }
+    }
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem('todos', JSON.stringify(todos));
+    }
+  }, [todos, mounted]);
+
+  function addTodo() {
+    const text = input.trim();
+    if (!text) return;
+    setTodos((prev) => [
+      { id: generateId(), text, completed: false, createdAt: Date.now() },
+      ...prev,
+    ]);
+    setInput('');
+    inputRef.current?.focus();
+  }
+
+  function toggleTodo(id: string) {
+    setTodos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+    );
+  }
+
+  function deleteTodo(id: string) {
+    setTodos((prev) => prev.filter((t) => t.id !== id));
+  }
+
+  function clearCompleted() {
+    setTodos((prev) => prev.filter((t) => !t.completed));
+  }
+
+  const filtered = todos.filter((t) => {
+    if (filter === 'active') return !t.completed;
+    if (filter === 'completed') return t.completed;
+    return true;
+  });
+
+  const activeCount = todos.filter((t) => !t.completed).length;
+  const completedCount = todos.filter((t) => t.completed).length;
+
+  if (!mounted) return null;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center px-4 py-10">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <h1 className="text-4xl font-bold text-center text-blue-600 mb-8 tracking-tight">
+          Todo
+        </h1>
+
+        {/* Input */}
+        <div className="flex gap-2 mb-6">
+          <input
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addTodo()}
+            placeholder="할 일을 입력하세요..."
+            className="flex-1 px-4 py-3 rounded-xl border border-blue-200 bg-white shadow-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-base"
+          />
+          <button
+            onClick={addTodo}
+            disabled={!input.trim()}
+            className="px-5 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-xl font-semibold shadow-sm transition-colors text-base"
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            추가
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Filter tabs */}
+        <div className="flex bg-white rounded-xl shadow-sm border border-blue-100 mb-4 p-1">
+          {(['all', 'active', 'completed'] as Filter[]).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                filter === f
+                  ? 'bg-blue-500 text-white shadow-sm'
+                  : 'text-gray-500 hover:text-blue-500'
+              }`}
+            >
+              {f === 'all' ? '전체' : f === 'active' ? '진행 중' : '완료'}
+            </button>
+          ))}
+        </div>
+
+        {/* Todo list */}
+        <div className="bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden">
+          {filtered.length === 0 ? (
+            <div className="py-16 text-center text-gray-400 text-sm">
+              {filter === 'completed'
+                ? '완료된 항목이 없습니다'
+                : filter === 'active'
+                ? '진행 중인 항목이 없습니다'
+                : '할 일을 추가해보세요!'}
+            </div>
+          ) : (
+            <ul>
+              {filtered.map((todo, index) => (
+                <li
+                  key={todo.id}
+                  className={`flex items-center gap-3 px-4 py-4 ${
+                    index < filtered.length - 1 ? 'border-b border-gray-100' : ''
+                  }`}
+                >
+                  <button
+                    onClick={() => toggleTodo(todo.id)}
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                      todo.completed
+                        ? 'bg-blue-500 border-blue-500'
+                        : 'border-gray-300 hover:border-blue-400'
+                    }`}
+                  >
+                    {todo.completed && (
+                      <svg
+                        className="w-3 h-3 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                  <span
+                    className={`flex-1 text-base leading-snug ${
+                      todo.completed ? 'line-through text-gray-400' : 'text-gray-700'
+                    }`}
+                  >
+                    {todo.text}
+                  </span>
+                  <button
+                    onClick={() => deleteTodo(todo.id)}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors flex-shrink-0"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Footer stats */}
+        {todos.length > 0 && (
+          <div className="flex items-center justify-between mt-4 px-1 text-sm text-gray-500">
+            <span>{activeCount}개 남음</span>
+            {completedCount > 0 && (
+              <button
+                onClick={clearCompleted}
+                className="text-red-400 hover:text-red-500 transition-colors"
+              >
+                완료 항목 삭제 ({completedCount})
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
