@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todo-pwa-v1';
+const CACHE_NAME = 'todo-pwa-v3';
 const URLS_TO_CACHE = [
   '/',
   '/manifest.json',
