@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "Todo List",
   description: "나만의 간단한 투두리스트",
   manifest: "/manifest.json",
-  themeColor: "#3b82f6",
+  themeColor: "#F4F1EC",
   viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
   appleWebApp: {
     capable: true,
