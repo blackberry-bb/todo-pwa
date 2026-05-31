@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "나만의 간단한 투두리스트",
   manifest: "/manifest.json",
   themeColor: "#3b82f6",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+  viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
