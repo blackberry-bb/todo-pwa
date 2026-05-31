@@ -2,16 +2,16 @@
   <!-- 배경 -->
   <rect width="512" height="512" rx="112" fill="#F4F1EC"/>
 
-  <!-- Row 1: 완료된 항목 (주황/갈색 체크) -->
-  <circle cx="152" cy="196" r="34" fill="#C28E6D"/>
-  <polyline points="137,196 149,209 170,183" stroke="white" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <rect x="208" y="180" width="156" height="30" rx="15" fill="#1A1A18"/>
+  <!-- Row 1: 완료 (cx=168, cy=172) -->
+  <circle cx="168" cy="172" r="28" fill="#C28E6D"/>
+  <polyline points="155,172 166,183 184,158" stroke="white" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <rect x="216" y="159" width="148" height="26" rx="13" fill="#1A1A18"/>
 
-  <!-- Row 2: 미완료 항목 -->
-  <circle cx="152" cy="284" r="34" fill="none" stroke="#1A1A18" stroke-width="10"/>
-  <rect x="208" y="268" width="128" height="30" rx="15" fill="#1A1A18"/>
+  <!-- Row 2: 미완료 (cy=256) -->
+  <circle cx="168" cy="256" r="28" fill="none" stroke="#1A1A18" stroke-width="9"/>
+  <rect x="216" y="243" width="122" height="26" rx="13" fill="#1A1A18"/>
 
-  <!-- Row 3: 미완료 항목 -->
-  <circle cx="152" cy="372" r="34" fill="none" stroke="#1A1A18" stroke-width="10"/>
-  <rect x="208" y="356" width="142" height="30" rx="15" fill="#1A1A18"/>
+  <!-- Row 3: 미완료 (cy=340) -->
+  <circle cx="168" cy="340" r="28" fill="none" stroke="#1A1A18" stroke-width="9"/>
+  <rect x="216" y="327" width="136" height="26" rx="13" fill="#1A1A18"/>
 </svg>
